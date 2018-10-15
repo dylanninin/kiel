@@ -137,6 +137,11 @@ class Cluster(object):
 
         missing_conns = yield self.process_brokers(response.brokers)
         missing_topics = self.process_topics(response.topics)
+
+        # BUG: raise error to avoid infinite loop
+        if missing_topics or missing_conns:
+            raise NoBrokersError
+
         while missing_conns or missing_topics:
             response = yield self.get_metadata(topics=list(missing_topics))
             missing_conns = yield self.process_brokers(response.brokers)
